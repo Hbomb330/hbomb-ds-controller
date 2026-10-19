@@ -1,0 +1,22 @@
+name: Ubuntu Controller Hub
+on:
+  pull_request:
+    paths: ['linux/**', '.github/workflows/ubuntu-controller.yml']
+  push:
+    branches: [main, 'ubuntu/**']
+    paths: ['linux/**', '.github/workflows/ubuntu-controller.yml']
+permissions:
+  contents: read
+jobs:
+  hardware-free:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: linux
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y python3-pygame
+      - run: python3 -m unittest discover -v
+      - run: python3 -m compileall -q . && bash -n launch.sh
+      - run: SDL_VIDEODRIVER=dummy python3 controller_hub.py --demo --smoke-test
+      - run: python3 controller_hub.py --report
